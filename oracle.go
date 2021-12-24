@@ -50,7 +50,9 @@ func (d Dialector) Initialize(db *gorm.DB) (err error) {
 	d.DefaultStringSize = 1024
 
 	// register callbacks
-	callbacks.RegisterDefaultCallbacks(db, &callbacks.Config{})
+	callbacks.RegisterDefaultCallbacks(db, &callbacks.Config{
+		QueryClauses: []string{"SELECT", "FROM", "WHERE", "LIMIT", "GROUP BY", "ORDER BY"},
+	})
 
 	d.DriverName = "godror"
 
@@ -79,6 +81,12 @@ func (d Dialector) ClauseBuilders() map[string]clause.ClauseBuilder {
 func (d Dialector) RewriteLimit(c clause.Clause, builder clause.Builder) {
 	if limit, ok := c.Expression.(clause.Limit); ok {
 		if stmt, ok := builder.(*gorm.Statement); ok {
+			if _, ok := stmt.Clauses["WHERE"]; !ok {
+				builder.WriteString("WHERE 1=1 ")
+			}
+			if limit := limit.Limit; limit > 0 {
+				builder.WriteString(" AND " + fmt.Sprintf("ROWNUM <= %d", limit))
+			}
 			if _, ok := stmt.Clauses["ORDER BY"]; !ok {
 				s := stmt.Schema
 				builder.WriteString("ORDER BY ")
@@ -91,18 +99,14 @@ func (d Dialector) RewriteLimit(c clause.Clause, builder clause.Builder) {
 					builder.WriteString(")")
 				}
 			}
-		}
 
-		if offset := limit.Offset; offset > 0 {
-			builder.WriteString(" OFFSET ")
-			builder.WriteString(strconv.Itoa(offset))
-			builder.WriteString(" ROWS")
 		}
-		if limit := limit.Limit; limit > 0 {
-			builder.WriteString(" FETCH NEXT ")
-			builder.WriteString(strconv.Itoa(limit))
-			builder.WriteString(" ROWS ONLY")
-		}
+		//if offset := limit.Offset; offset > 0 {
+		//	builder.WriteString(" OFFSET ")
+		//	builder.WriteString(strconv.Itoa(offset))
+		//	builder.WriteString(" ROWS")
+		//}
+
 	}
 }
 

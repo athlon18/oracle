@@ -3,6 +3,7 @@ package oracle
 import (
 	"bytes"
 	"database/sql"
+	"github.com/athlon18/oracle/clauses"
 	"reflect"
 
 	"github.com/thoas/go-funk"
@@ -11,7 +12,6 @@ import (
 	"gorm.io/gorm/clause"
 	gormSchema "gorm.io/gorm/schema"
 
-	"github.com/cengsin/oracle/clauses"
 )
 
 func Create(db *gorm.DB) {
