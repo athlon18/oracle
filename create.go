@@ -11,7 +11,6 @@ import (
 	"gorm.io/gorm/callbacks"
 	"gorm.io/gorm/clause"
 	gormSchema "gorm.io/gorm/schema"
-
 )
 
 func Create(db *gorm.DB) {
@@ -134,7 +133,7 @@ func Create(db *gorm.DB) {
 							func(field *gormSchema.Field) {
 								switch insertTo.Kind() {
 								case reflect.Struct:
-									if err = field.Set(insertTo, stmt.Vars[boundVars[field.Name]].(sql.Out).Dest); err != nil {
+									if err = field.Set(stmt.Context, insertTo, stmt.Vars[boundVars[field.Name]].(sql.Out).Dest); err != nil {
 										db.AddError(err)
 									}
 								case reflect.Map:
