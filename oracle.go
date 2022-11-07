@@ -87,7 +87,7 @@ func (d Dialector) RewriteLimit(c clause.Clause, builder clause.Builder) {
 			if _, ok := stmt.Clauses["WHERE"]; !ok {
 				builder.WriteString("WHERE 1=1 ")
 			}
-			if limit := limit.Limit; limit > 0 {
+			if limit := *(limit.Limit); limit > 0 {
 				builder.WriteString(" AND " + fmt.Sprintf("ROWNUM <= %d", limit))
 			}
 			if _, ok := stmt.Clauses["ORDER BY"]; !ok {
